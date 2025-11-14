@@ -1,66 +1,50 @@
-name: Build dlc.dat
+name: Build and Release dlc.dat
+
 on:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - "**/README.md"
+  schedule:
+    # Runs at the beginning of every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
 jobs:
   build:
-    name: Build
+    name: Build and Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to create/update releases
 
     steps:
-      - name: Checkout codebase
-        uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          path: code
+          python-version: '3.14'
 
-      - name: Setup Go
-        uses: actions/setup-go@v6
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
         with:
-          go-version-file: code/go.mod
-          cache-dependency-path: code/go.sum
+          path: ~/.cache/pypoetry
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
 
-      - name: Set variables
-        run: |
-          echo "RELEASE_NAME=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-          echo "TAG_NAME=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-        shell: bash
+      - name: Install dependencies
+        run: poetry install --no-root
 
-      - name: Build dlc.dat file
-        run: |
-          cd code || exit 1
-          go run ./ --outputdir=../ --exportlists=category-ads-all,tld-cn,cn,tld-\!cn,geolocation-\!cn,apple,icloud
-          cd ../ && rm -rf code
+      - name: Run script to generate dlc.dat
+        run: poetry run python main.py --input blocklists.txt --output-name dlc.dat
 
-      - name: Generate dlc.dat sha256 hash
-        run: |
-          sha256sum dlc.dat > dlc.dat.sha256sum
-
-      - name: Generate Zip
-        run: |
-          zip -9 dlc.dat.zip dlc.dat
-          sha256sum dlc.dat.zip > dlc.dat.zip.sha256sum
-
-      - name: Generate XZ
-        run: |
-          xz -z -9 -k dlc.dat
-          sha256sum dlc.dat.xz > dlc.dat.xz.sha256sum
-
-      - name: Git push assets to "release" branch
-        run: |
-          git init
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b release
-          git add *.txt *.sha256sum dlc.dat dlc.dat.zip dlc.dat.xz
-          git commit -m "${{ env.RELEASE_NAME }}"
-          git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-          git push -f -u origin release
-
-      - name: Release and upload assets
-        run: |
-          gh release create ${{ env.TAG_NAME }} --generate-notes --latest --title ${{ env.RELEASE_NAME }} ./dlc.dat ./dlc.dat.*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create or Update Release and Upload Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Latest Blocklist"
+          body: "This release contains the latest automatically generated dlc.dat file."
+          make_latest: true
+          files: |
+            dlc.dat

@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "blocklist-compiler"
+version = "0.1.0"
+description = "A script to compile various blocklist formats into a V2Ray dlc.dat file."
+authors = ["An0nX"]
+readme = "README.md"
+packages = [{include = "blocklist_compiler"}]
+
+[tool.poetry.dependencies]
+python = "^3.14"
+requests = "^2.32.5"
+protobuf = "^6.33.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

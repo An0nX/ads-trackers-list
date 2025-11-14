@@ -9,16 +9,14 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      timezone: "Asia/Shanghai"
-      time: "10:00"
     pull-request-branch-name:
       separator: "-"
 
-  - package-ecosystem: "gomod"
+updates:
+  - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "daily"
-      timezone: "Asia/Shanghai"
-      time: "10:00"
-    pull-request-branch-name:
-      separator: "-"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
