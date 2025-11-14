@@ -1,137 +1,108 @@
-# Domain list community
+# Blocklist Compiler for V2Ray/Xray
 
-This project manages a list of domains, to be used as geosites for routing purpose in Project V.
+[![GitHub Actions Workflow Status](https://github.com/An0nX/ads-trackers-list/actions/workflows/build.yml/badge.svg)](https://github.com/An0nX/ads-trackers-list/actions/workflows/build.yml)
+[![Latest Release](https://img.shields.io/github/v/release/An0nX/ads-trackers-list?label=latest%20release&color=blue)](https://github.com/An0nX/ads-trackers-list/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/An0nX/ads-trackers-list)](https://github.com/An0nX/ads-trackers-list/blob/main/LICENSE)
+[![Python Version](https://img.shields.io/badge/python-3.14+-blue.svg)](https://www.python.org/downloads/)
 
-## Purpose of this project
+This project automatically aggregates various ad, tracker, and malware blocklists into a single, V2Ray/Xray-compatible `dlc.dat` file.
 
-This project is not opinionated. In other words, it does NOT endorse, claim or imply that a domain should be blocked or proxied. It can be used to generate routing rules on demand.
+## 🚀 Key Features
 
-## Download links
+-   **Automatic Updates:** The build process runs hourly, ensuring your blocklist is always up-to-date.
+-   **Universal Format Support:** Parses popular formats including AdGuard, Pi-hole, `hosts`, and plain domain lists.
+-   **Single File Output:** All lists are compiled into one convenient `dlc.dat` file for `geosite` usage.
+-   **Flexible:** Easily customizable by simply modifying the source list file.
 
-- **dlc.dat**：[https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat](https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat)
-- **dlc.dat.sha256sum**：[https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat.sha256sum](https://github.com/v2fly/domain-list-community/releases/latest/download/dlc.dat.sha256sum)
+## How to Use
 
-## Usage example
+### 1. Download the Pre-compiled File
 
-Each file in the `data` directory can be used as a rule in this format: `geosite:filename`.
+You don't need to build anything yourself. The GitHub Action does all the work and updates a universal release tagged `latest`.
+
+-   **Direct link to the file:**
+    ```
+    https://github.com/An0nX/ads-trackers-list/releases/latest/download/dlc.dat
+    ```
+
+### 2. Example V2Ray/Xray Configuration
+
+Use the downloaded `dlc.dat` file in your routing configuration. You can block all domains from the aggregated `BLOCKLISTS-ALL` list or use any specific list by its name.
 
 ```json
-"routing": {
-  "domainStrategy": "IPIfNonMatch",
-  "rules": [
+{
+  "routing": {
+    "domainStrategy": "AsIs",
+    "rules": [
+      {
+        "type": "field",
+        "outboundTag": "block",
+        "domain": [
+          // Block all domains from all lists
+          "geosite:blocklists-all",
+
+          // Or block domains from a specific list
+          "geosite:adguard-dns"
+        ]
+      }
+      // ... other rules
+    ]
+  },
+  "outbounds": [
     {
-      "type": "field",
-      "outboundTag": "Reject",
-      "domain": [
-        "geosite:category-ads-all",
-        "geosite:category-porn"
-      ]
-    },
-    {
-      "type": "field",
-      "outboundTag": "Direct",
-      "domain": [
-        "domain:icloud.com",
-        "domain:icloud-content.com",
-        "domain:cdn-apple.com",
-        "geosite:cn",
-        "geosite:private"
-      ]
-    },
-    {
-      "type": "field",
-      "outboundTag": "Proxy-1",
-      "domain": [
-        "geosite:category-anticensorship",
-        "geosite:category-media",
-        "geosite:category-vpnservices"
-      ]
-    },
-    {
-      "type": "field",
-      "outboundTag": "Proxy-2",
-      "domain": [
-        "geosite:category-dev"
-      ]
-    },
-    {
-      "type": "field",
-      "outboundTag": "Proxy-3",
-      "domain": [
-        "geosite:geolocation-!cn"
-      ]
+      "protocol": "blackhole",
+      "tag": "block"
     }
+    // ... other outbounds
   ]
 }
 ```
 
-## Generate `dlc.dat` manually
+## Building Your Own Blocklist
 
-- Install `golang` and `git`
-- Clone project code: `git clone https://github.com/v2fly/domain-list-community.git`
-- Navigate to project root directory: `cd domain-list-community`
-- Install project dependencies: `go mod download`
-- Generate `dlc.dat` (without `datapath` option means to use domain lists in `data` directory of current working directory):
-  - `go run ./`
-  - `go run ./ --datapath=/path/to/your/custom/data/directory`
+You can easily create your own version of the `dlc.dat` file with a custom set of sources.
 
-Run `go run ./ --help` for more usage information.
+1.  **Fork this repository.**
 
-## Structure of data
+2.  **Edit `blocklists.txt`:**
+    Add, remove, or modify URLs in the `blocklists.txt` file. The format for each line is:
+    ```
+    short-list-name,https://url-to-blocklist.txt
+    ```
+    -   `short-list-name` will be used for the `geosite` tag (e.g., `geosite:SHORT-LIST-NAME`).
+    -   Use only Latin letters, numbers, and hyphens.
 
-All data are under `data` directory. Each file in the directory represents a sub-list of domains, named by the file name. File content is in the following format.
+3.  **Commit and push your changes:**
+    After pushing the changes to your fork, the GitHub Action will automatically run, build a new `dlc.dat`, and update the `latest` release in **your repository**.
 
-```
-# comments
-include:another-file
-domain:google.com @attr1 @attr2
-keyword:google
-regexp:www\.google\.com$
-full:www.google.com
-```
+### Local Build (Optional)
 
-**Syntax:**
+If you want to test the build locally:
 
-> The following types of rules are **NOT** fully compatible with the ones that defined by user in V2Ray config file. Do **Not** copy and paste directly.
+1.  **Install dependencies:**
+    ```bash
+    # Ensure you have Poetry installed
+    poetry install --with dev
+    ```
 
-* Comment begins with `#`. It may begin anywhere in the file. The content in the line after `#` is treated as comment and ignored in production.
-* Inclusion begins with `include:`, followed by the file name of an existing file in the same directory.
-* Subdomain begins with `domain:`, followed by a valid domain name. The prefix `domain:` may be omitted.
-* Keyword begins with `keyword:`, followed by a string.
-* Regular expression begins with `regexp:`, followed by a valid regular expression (per Golang's standard).
-* Full domain begins with `full:`, followed by a complete and valid domain name.
-* Domains (including `domain`, `keyword`, `regexp` and `full`) may have one or more attributes. Each attribute begins with `@` and followed by the name of the attribute.
+2.  **Compile the Protobuf schema:**
+    ```bash
+    poetry run python -m grpc_tools.protoc -I./proto --python_out=. ./proto/router_common.proto
+    ```
 
-> **Note:** Adding new `regexp` and `keyword` rules is discouraged because it is easy to use them incorrectly, and proxy software cannot efficiently match these types of rules.
+3.  **Run the build script:**
+    ```bash
+    poetry run python main.py --input blocklists.txt --output-name dlc.dat
+    ```
 
-## How it works
+## Supported Formats
 
-The entire `data` directory will be built into an external `geosite` file for Project V. Each file in the directory represents a section in the generated file.
+The script can process lists in the following formats:
 
-To generate a section:
+-   **AdGuard/Adblock Plus:** `||example.com^` rules
+-   **Pi-hole/Raw:** Lists containing one domain per line.
+-   **Hosts:** `0.0.0.0 example.com` or `127.0.0.1 example.com` format.
 
-1. Remove all the comments in the file.
-2. Replace `include:` lines with the actual content of the file.
-3. Omit all empty lines.
-4. Generate each `domain:` line into a [sub-domain routing rule](https://github.com/v2fly/v2ray-core/blob/master/app/router/config.proto#L21).
-5. Generate each `keyword:` line into a [plain domain routing rule](https://github.com/v2fly/v2ray-core/blob/master/app/router/config.proto#L17).
-6. Generate each `regexp:` line into a [regex domain routing rule](https://github.com/v2fly/v2ray-core/blob/master/app/router/config.proto#L19).
-7. Generate each `full:` line into a [full domain routing rule](https://github.com/v2fly/v2ray-core/blob/master/app/router/config.proto#L23).
+## Contributing
 
-## How to organize domains
-
-### File name
-
-Theoretically any string can be used as the name, as long as it is a valid file name. In practice, we prefer names for determinic group of domains, such as the owner (usually a company name) of the domains, e.g., "google", "netflix". Names with unclear scope are generally unrecommended, such as "evil", or "local".
-
-### Attributes
-
-Attribute is useful for sub-group of domains, especially for filtering purpose. For example, the list of `google` domains may contains its main domains, as well as domains that serve ads. The ads domains may be marked by attribute `@ads`, and can be used as `geosite:google@ads` in V2Ray routing.
-
-## Contribution guideline
-
-* Fork this repo, make modifications to your own repo, file a PR.
-* Please begin with small size PRs, say modification in a single file.
-* A PR must be reviewed and approved by another member.
-* A script will verify your pull request to test whether your PR is correct or not every time you update the PR. Only the PR which passes the test will be merged. Please go to the Action label to get detailed information if you didn't pass it. We also provide the file which has been generated to make you test.
-* After a few successful PRs, you may apply for manager access to this repository.
+Feel free to suggest improvements to the script via Pull Requests.
