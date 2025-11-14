@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package v2ray.core.app.router.routercommon;
+option go_package = "v2ray.com/core/app/router/routercommon";
+option java_package = "com.v2ray.core.app.router.routercommon";
+option java_multiple_files = true;
+
+message Domain {
+  enum Type {
+    Plain = 0;
+    Regex = 1;
+    RootDomain = 2;
+    Full = 3;
+    DOMAIN_MATCHING_TYPE_DO_NOT_USE_me_if_you_can = 4;
+  }
+
+  // Domain matching type.
+  Type type = 1;
+
+  // Domain value.
+  string value = 2;
+
+  // Attributes of the domain. May be used for filtering.
+  repeated Attribute attribute = 3;
+
+  message Attribute {
+    string key = 1;
+    oneof typed_value_oneof {
+      bool bool_value = 2;
+      int64 int_value = 3;
+    }
+  }
+}
+
+message GeoSite {
+  string country_code = 1;
+  repeated Domain domain = 2;
+}
+
+message GeoSiteList {
+  repeated GeoSite entry = 1;
+}
+
+message CIDR {
+  // IP address, should be either 4 or 16 bytes.
+  bytes ip = 1;
+  // Number of leading ones in the network mask.
+  uint32 prefix = 2;
+}
+
+message GeoIP {
+  string country_code = 1;
+  repeated CIDR cidr = 2;
+}
+
+message GeoIPList {
+  repeated GeoIP entry = 1;
+}
