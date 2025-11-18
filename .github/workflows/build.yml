@@ -49,7 +49,7 @@ jobs:
       - name: Create or Update Release and Upload Asset
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest
+          tag_name: ${{ github.sha }}
           name: "Latest Blocklist"
           body: "This release contains the latest automatically generated dlc.dat file."
           make_latest: true
