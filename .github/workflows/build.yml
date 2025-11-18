@@ -46,12 +46,53 @@ jobs:
       - name: Run script to generate dlc.dat
         run: poetry run python main.py --input blocklists.txt --output-name dlc.dat
 
-      - name: Create or Update Release and Upload Asset
+      - name: Check if content changed and generate tag
+        id: check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 1. Считаем хеш нового файла
+          NEW_HASH=$(sha256sum dlc.dat | awk '{print $1}')
+          echo "New file hash: $NEW_HASH"
+          
+          # 2. Пробуем скачать файл из текущего latest релиза для сравнения
+          # Если релиза нет (первый запуск), команда упадет, но || true позволит продолжить
+          gh release download latest --pattern "dlc.dat" --output "old_dlc.dat" || echo "No previous release found"
+
+          CHANGED="true"
+
+          # 3. Если старый файл скачался, сравниваем хеши
+          if [ -f "old_dlc.dat" ]; then
+            OLD_HASH=$(sha256sum old_dlc.dat | awk '{print $1}')
+            echo "Old file hash: $OLD_HASH"
+            
+            if [ "$NEW_HASH" == "$OLD_HASH" ]; then
+              echo "Hashes match. No update required."
+              CHANGED="false"
+            fi
+          fi
+
+          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+
+          # 4. Если есть изменения, генерируем уникальный тег на основе даты
+          if [ "$CHANGED" == "true" ]; then
+            # Формат тега: vYYYY.MM.DD-HHMM (например, v2023.11.05-1400)
+            NEW_TAG="v$(date +'%Y.%m.%d-%H%M')"
+            echo "New tag will be: $NEW_TAG"
+            echo "tag_name=$NEW_TAG" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Release and Upload Asset
+        if: steps.check.outputs.changed == 'true'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.sha }}
-          name: "Latest Blocklist"
-          body: "This release contains the latest automatically generated dlc.dat file."
+          tag_name: ${{ steps.check.outputs.tag_name }}
+          name: "Blocklist Update ${{ steps.check.outputs.tag_name }}"
+          body: |
+            Automatic update generated at ${{ steps.check.outputs.tag_name }}
+            
+            SHA256 Checksum:
+            `${{ steps.check.outputs.new_hash }}`
           make_latest: true
           files: |
             dlc.dat
