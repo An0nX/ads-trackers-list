@@ -90,9 +90,6 @@ jobs:
           name: "Blocklist Update ${{ steps.check.outputs.tag_name }}"
           body: |
             Automatic update generated at ${{ steps.check.outputs.tag_name }}
-            
-            SHA256 Checksum:
-            `${{ steps.check.outputs.new_hash }}`
           make_latest: true
           files: |
             dlc.dat
