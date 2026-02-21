@@ -2,7 +2,6 @@ name: Build and Release dlc.dat
 
 on:
   schedule:
-    # Runs at the beginning of every hour
     - cron: '0 * * * *'
   workflow_dispatch:
 
@@ -11,7 +10,7 @@ jobs:
     name: Build and Release
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Needed to create/update releases
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -22,50 +21,43 @@ jobs:
         with:
           python-version: '3.14'
 
-      - name: Install Poetry
-        run: pipx install poetry
-
-      - name: Cache dependencies
-        uses: actions/cache@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
+          enable-cache: true
+          cache-dependency-glob: 'uv.lock'
 
       - name: Install dependencies
-        run: poetry install --no-root --with dev
+        run: uv sync
 
       - name: Compile Protobufs
         run: >
-          poetry run python -m grpc_tools.protoc
+          uv run python -m grpc_tools.protoc
           -I./proto
           --python_out=.
           ./proto/router_common.proto
 
       - name: Run script to generate dlc.dat
-        run: poetry run python main.py --input blocklists.txt --output-name dlc.dat
+        run: >
+          uv run python main.py
+          --input blocklists.txt
+          --name dlc.dat
+          --stats-file stats.json
 
       - name: Check if content changed and generate tag
         id: check
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 1. Считаем хеш нового файла
           NEW_HASH=$(sha256sum dlc.dat | awk '{print $1}')
-          echo "New file hash: $NEW_HASH"
-          
-          # 2. Пробуем скачать файл из текущего latest релиза для сравнения
-          # Если релиза нет (первый запуск), команда упадет, но || true позволит продолжить
-          gh release download latest --pattern "dlc.dat" --output "old_dlc.dat" || echo "No previous release found"
+          echo "new_hash=$NEW_HASH" >> $GITHUB_OUTPUT
+
+          gh release download latest --pattern "dlc.dat" --output "old_dlc.dat" 2>/dev/null || echo "No previous release found"
 
           CHANGED="true"
 
-          # 3. Если старый файл скачался, сравниваем хеши
           if [ -f "old_dlc.dat" ]; then
             OLD_HASH=$(sha256sum old_dlc.dat | awk '{print $1}')
-            echo "Old file hash: $OLD_HASH"
-            
             if [ "$NEW_HASH" == "$OLD_HASH" ]; then
               echo "Hashes match. No update required."
               CHANGED="false"
@@ -74,13 +66,107 @@ jobs:
 
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
-          # 4. Если есть изменения, генерируем уникальный тег на основе даты
           if [ "$CHANGED" == "true" ]; then
-            # Формат тега: vYYYY.MM.DD-HHMM (например, v2023.11.05-1400)
             NEW_TAG="v$(date +'%Y.%m.%d-%H%M')"
-            echo "New tag will be: $NEW_TAG"
             echo "tag_name=$NEW_TAG" >> $GITHUB_OUTPUT
           fi
+
+      - name: Build release notes
+        if: steps.check.outputs.changed == 'true'
+        id: notes
+        run: |
+          STATS=$(cat stats.json)
+
+          TOTAL_CATEGORIES=$(echo "$STATS" | jq -r '.total_categories')
+          TOTAL_RULES=$(echo "$STATS" | jq -r '.total_rules')
+          FILE_SIZE_BYTES=$(echo "$STATS" | jq -r '.file_size_bytes')
+          FILE_SIZE_KB=$(( FILE_SIZE_BYTES / 1024 ))
+          SHA256="${{ steps.check.outputs.new_hash }}"
+          TAG="${{ steps.check.outputs.tag_name }}"
+
+          # Build category table
+          CATEGORY_TABLE=$(echo "$STATS" | jq -r '
+            .categories | to_entries | sort_by(.key) |
+            .[] | "| `\(.key)` | \(.value | tostring | 
+              # Add thousands separator
+              explode | reverse | [range(0; length; 3) as $i | .[($i):($i+3)]] |
+              map(implode) | join(",") | explode | reverse | implode
+            ) |"
+          ')
+
+          # Build failed list
+          FAILED_LIST=$(echo "$STATS" | jq -r '
+            if (.failed | length) == 0 then
+              "All sources downloaded successfully."
+            else
+              "The following sources failed to download:\n" +
+              (.failed | map("- `\(.)`") | join("\n"))
+            end
+          ')
+
+          # Format total rules with thousands separator
+          TOTAL_RULES_FMT=$(printf "%'d" "$TOTAL_RULES")
+
+          {
+            echo 'body<<RELEASE_EOF'
+            echo "## 📋 Blocklist Update \`$TAG\`"
+            echo ""
+            echo "Automated compilation of domain blocklists into a single \`dlc.dat\` file for V2Ray/Xray routing rules."
+            echo ""
+            echo "---"
+            echo ""
+            echo "### 📊 Build Summary"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| **Categories** | $TOTAL_CATEGORIES |"
+            echo "| **Total unique rules** | $TOTAL_RULES_FMT |"
+            echo "| **File size** | ${FILE_SIZE_KB} KB |"
+            echo ""
+            echo "---"
+            echo ""
+            echo "### 📦 Categories"
+            echo ""
+            echo "| Category | Rules |"
+            echo "|----------|-------|"
+            echo "$CATEGORY_TABLE"
+            echo ""
+            echo "---"
+            echo ""
+            echo "### ⚠️ Source Status"
+            echo ""
+            echo "$FAILED_LIST"
+            echo ""
+            echo "---"
+            echo ""
+            echo "### 🔒 Integrity"
+            echo ""
+            echo '```'
+            echo "SHA-256: $SHA256"
+            echo '```'
+            echo ""
+            echo "---"
+            echo ""
+            echo "### 📥 Usage"
+            echo ""
+            echo 'Configure your Xray/V2Ray client to use this file as a GeoSite data source:'
+            echo ""
+            echo '```json'
+            echo '{'
+            echo '  "routing": {'
+            echo '    "rules": ['
+            echo '      {'
+            echo '        "type": "field",'
+            echo '        "domain": ["ext:dlc.dat:adguard-dns-filter"],'
+            echo '        "outboundTag": "block"'
+            echo '      }'
+            echo '    ]'
+            echo '  }'
+            echo '}'
+            echo '```'
+            echo ""
+            echo RELEASE_EOF
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create Release and Upload Asset
         if: steps.check.outputs.changed == 'true'
@@ -88,8 +174,7 @@ jobs:
         with:
           tag_name: ${{ steps.check.outputs.tag_name }}
           name: "Blocklist Update ${{ steps.check.outputs.tag_name }}"
-          body: |
-            Automatic update generated at ${{ steps.check.outputs.tag_name }}
+          body: ${{ steps.notes.outputs.body }}
           make_latest: true
           files: |
             dlc.dat

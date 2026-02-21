@@ -1,39 +1,59 @@
-adguard-dns,https://adguardteam.github.io/HostlistsRegistry/assets/filter_1.txt
-adguard-safari,https://adguardteam.github.io/HostlistsRegistry/assets/filter_33.txt
-adguard-experimental,https://adguardteam.github.io/HostlistsRegistry/assets/filter_23.txt
-adguard-url-tracking,https://adguardteam.github.io/HostlistsRegistry/assets/filter_7.txt
-youtube-ads-pihole,https://raw.githubusercontent.com/kboghdady/youTube_ads_4_pi-hole/master/youtubelist.txt
-blocklistproject-malware,https://blocklistproject.github.io/Lists/adguard/malware-ags.txt
-blocklistproject-ransomware,https://blocklistproject.github.io/Lists/adguard/ransomware-ags.txt
-blocklistproject-tracking,https://blocklistproject.github.io/Lists/adguard/tracking-ags.txt
-adguard-social-media,https://adguardteam.github.io/HostlistsRegistry/assets/filter_6.txt
-adguard-mobile-ads,https://adguardteam.github.io/HostlistsRegistry/assets/filter_60.txt
-adguard-spyware,https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_3_Spyware/filter.txt
-adguard-url-tracking-params,https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_17_TrackParam/filter.txt
-adguard-social-widgets,https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_4_Social/filter.txt
-adguard-annoyances,https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_14_Annoyances/filter.txt
-adguard-russian,https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_1_Russian/filter.txt
-easylist-antiadblock-russian,https://github.com/easylist/antiadblockfilters/raw/refs/heads/master/antiadblockfilters/antiadblock_russian.txt
-easylist-antiadblock-english,https://github.com/easylist/antiadblockfilters/raw/refs/heads/master/antiadblockfilters/antiadblock_english.txt
-adguard-mobile-ads,https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_11_Mobile/filter.txt
-adguard-dns-simplified,https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_15_DnsFilter/filter.txt
-perflyst-android-tracking,https://raw.githubusercontent.com/Perflyst/PiHoleBlocklist/master/android-tracking.txt
-ftpihole-xiaomi-ads,https://raw.githubusercontent.com/ftpmorph/ftpihole/master/blocklists/xiaomi-ads-tracking.txt
-jakejarvis-ios-trackers,https://raw.githubusercontent.com/jakejarvis/ios-trackers/refs/heads/master/adguard-disconnect-ad.txt
-v2fly-google-ads,https://raw.githubusercontent.com/v2fly/domain-list-community/refs/heads/master/data/google-ads
-v2fly-adobe-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/adobe-ads
-v2fly-apple-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/apple-ads
-v2fly-unity-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/unity-ads
-v2fly-yahoo-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/yahoo-ads
-v2fly-amazon-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/amazon-ads
-v2fly-alibaba-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/alibaba-ads
-v2fly-xiaomi-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/xiaomi-ads
-v2fly-spotify-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/spotify-ads
-v2fly-tencent-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/tencent-ads
-v2fly-whatsapp-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/whatsapp-ads
-v2fly-facebook-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/facebook-ads
-v2fly-duolingo-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/duolingo-ads
-v2fly-instagram-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/instagram-ads
-v2fly-ookla-ads,https://github.com/v2fly/domain-list-community/raw/refs/heads/master/data/ookla-speedtest-ads
-urlhaus-malicious,https://urlhaus.abuse.ch/downloads/hostfile/
-oisd-full,https://abp.oisd.nl/
+# AdGuard Lists
+adguard-dns-filter https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
+adguard-mobile-ads https://raw.githubusercontent.com/AhaDNS/Filters/refs/heads/master/Filters/AdGuardMobileAdsFilter/filter_60.txt
+adguard-mobile-specific https://raw.githubusercontent.com/AhaDNS/Filters/refs/heads/master/Filters/AdGuardMobileSpecificFilter/filter_11.txt
+adguard-tracking https://raw.githubusercontent.com/AhaDNS/Filters/refs/heads/master/Filters/AdGuardTrackingProtectionFilter/filter_3.txt
+adguard-base https://raw.githubusercontent.com/AhaDNS/Filters/refs/heads/master/Filters/AdGuardBaseFilter/filter_2.txt
+adguard-social https://raw.githubusercontent.com/AhaDNS/Filters/refs/heads/master/Filters/AdGuardSocialMediaFilter/filter_4.txt
+adguard-annoyances https://raw.githubusercontent.com/AhaDNS/Filters/refs/heads/master/Filters/AdGuardAnnoyancesFilter/filter_14.txt
+adguard-cname https://raw.githubusercontent.com/AhaDNS/Filters/refs/heads/master/Filters/AdGuardCNAMEOriginalTrackers/filter_331.txt
+adguard-chinese https://raw.githubusercontent.com/AhaDNS/Filters/refs/heads/master/Filters/AdGuardChineseFilter/filter_224.txt
+
+# EasyList / EasyPrivacy / Fanboy
+easylist https://easylist.to/easylist/easylist.txt
+easyprivacy https://easylist.to/easylist/easyprivacy.txt
+fanboy-annoyance https://easylist.to/easylist/fanboy-annoyance.txt
+fanboy-social https://easylist.to/easylist/fanboy-social.txt
+easylist-cookie https://secure.fanboy.co.nz/fanboy-cookiemonster.txt
+
+# Peter Lowe's List
+peter-lowe https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=0&mimetype=plaintext
+
+# Dan Pollock's Hosts
+dan-pollock https://someonewhocares.org/hosts/hosts
+
+# URLhaus Malware Filter
+urlhaus https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-hosts.txt
+
+# Steven Black's Unified Hosts
+steven-black https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+
+# OISD
+oisd-full https://big.oisd.nl/
+
+# HaGeZi
+hagezi-multi https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/multi.txt
+hagezi-tif https://raw.githubusercontent.com/hagezi/dns-blocklists/main/hosts/tif.txt
+
+# 1Hosts
+1hosts-lite https://raw.githubusercontent.com/badmojr/1Hosts/master/Lite/hosts.txt
+
+# Disconnect.me
+disconnect-ads https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+disconnect-tracking https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt
+disconnect-malvertising https://s3.amazonaws.com/lists.disconnect.me/simple_malvertising.txt
+
+# NoCoin (Crypto Mining)
+nocoin https://raw.githubusercontent.com/nickkelly1/NoCoin-Filter-List/refs/heads/master/nickkelly1-NoCoin.txt
+
+# Phishing
+phishing-army https://phishing.army/download/phishing_army_blocklist.txt
+
+# Spam404
+spam404 https://raw.githubusercontent.com/Spam404/lists/master/main-blacklist.txt
+
+# WindowsSpyBlocker
+windows-spy https://raw.githubusercontent.com/nickkelly1/WindowsSpyBlocker-Filter-List/refs/heads/main/nickkelly1-WindowsSpyBlocker.txt
+
+# v2fly domain-list-community (category-ads-all)
+v2fly-ads https://raw.githubusercontent.com/nickkelly1/nickkelly1-v2fly-domain-list/refs/heads/main/category-ads-all
