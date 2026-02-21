@@ -1,21 +1,12 @@
-[tool.poetry]
+[project]
 name = "blocklist-compiler"
 version = "0.1.0"
-description = "A script to compile various blocklist formats into a V2Ray dlc.dat file."
-authors = ["An0nX"]
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.14"
-requests = "^2.32.5"
-protobuf = "^6.33.1"
-
-[tool.poetry.group.dev.dependencies]
-grpcio-tools = "^1.76.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp>=3.13.3",
+    "protobuf>=6.33.5",
+]
 
 [dependency-groups]
 dev = [
@@ -25,95 +16,4 @@ dev = [
     "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
     "ruff>=0.15.2",
-]
-
-[tool.ruff]
-line-length = 88
-target-version = "py313"
-fix = true
-show-fixes = true
-output-format = "grouped"
-exclude = [
-    ".bzr", ".direnv", ".eggs", ".git", ".git-rewrite", ".hg",
-    ".ipynb_checkpoints", ".mypy_cache", ".nox", ".pants.d", ".pyenv",
-    ".pytest_cache", ".pytype", ".ruff_cache", ".svn", ".tox", ".venv",
-    ".vscode", "__pypackages__", "_build", "buck-out", "build", "dist",
-    "node_modules", "site-packages", "venv",
-]
-unsafe-fixes = false
-
-[tool.ruff.lint]
-select = [
-    "F",      # Pyflakes
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "I",      # isort
-    "N",      # pep8-naming
-    "UP",     # pyupgrade
-    "B",      # flake8-bugbear
-    "S",      # flake8-bandit (security)
-    "A",      # flake8-builtins
-    "C4",     # flake8-comprehensions
-    "T10",    # flake8-debugger
-    "SIM",    # flake8-simplify
-    "TCH",    # flake8-type-checking
-    "ARG",    # flake8-unused-arguments
-    "PTH",    # flake8-use-pathlib
-    "ERA",    # eradicate
-    "PL",     # pylint
-    "RUF",    # ruff-specific
-    "PERF",   # perflint (performance)
-    "FBT",    # flake8-boolean-trap
-]
-ignore = [
-    "E501",   # Line length handled by ruff format
-    "S101",   # assert usage (re-enabled for tests)
-    "COM812", # Conflicts with formatter
-    "ISC001", # Conflicts with formatter
-]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**/*" = ["S101", "SLF001", "ARG001"]
-"__init__.py" = ["F401"]
-
-[tool.ruff.lint.isort]
-combine-as-imports = true
-section-order = [
-    "future",
-    "standard-library",
-    "third-party",
-    "first-party",
-    "local-folder",
-]
-
-[tool.ruff.lint.flake8-type-checking]
-strict = true
-quote-annotations = true
-
-[tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["pydantic.Field"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "lf"
-
-[tool.pytest.ini_options]
-pythonpath = ["."]
-python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
-addopts = [
-    "--strict-markers",
-    "--strict-config",
-    "-ra",
-    "--tb=short",
-    "--cov=.",
-    "--cov-report=term-missing",
-    "--cov-fail-under=50",
-]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks integration tests requiring external services",
 ]
